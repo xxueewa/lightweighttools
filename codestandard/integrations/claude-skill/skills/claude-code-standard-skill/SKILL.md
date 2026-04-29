@@ -27,6 +27,3 @@ Use this skill to select the correct code-standard skill
 - User instruction wins over inferred config.
 - Existing repo style wins when the written standard is silent.
 - If two standards conflict, state the conflict and ask before making broad edits.
-
-## Verification
-Afte
