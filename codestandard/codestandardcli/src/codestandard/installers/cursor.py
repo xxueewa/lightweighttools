@@ -22,7 +22,7 @@ from typing import List
 
 from .base import BaseInstaller
 
-# Same glob map as the Claude installer — keep in sync or extract to utils.py
+# Same glob map as the Claude installers — keep in sync or extract to utils.py
 LANG_GLOBS: dict[str, list[str]] = {
     "java":       ["**/*.java"],
     "python":     ["**/*.py"],

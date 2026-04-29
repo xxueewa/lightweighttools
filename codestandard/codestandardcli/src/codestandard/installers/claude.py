@@ -66,7 +66,7 @@ class ClaudeSkillInstaller(BaseInstaller):
     """
     Installs code standards as a Claude Code skill under ~/.claude/skills/.
 
-    this installer targets the GLOBAL skills directory, so the skill is
+    this installers targets the GLOBAL skills directory, so the skill is
     available across ALL projects on this machine.
     """
 
@@ -75,8 +75,8 @@ class ClaudeSkillInstaller(BaseInstaller):
 
     def __init__(self, source: Path, target: Path, dry_run: bool, overwrite: bool) -> None:
         # If the user didn't override --target, use ~/.claude
-        if target == Path(".").resolve():
-            target = self.DEFAULT_TARGET
+        source = source.resolve()
+        target = self.DEFAULT_TARGET
         super().__init__(source, target, dry_run, overwrite)
 
     # ------------------------------------------------------------------
@@ -97,6 +97,8 @@ class ClaudeSkillInstaller(BaseInstaller):
                 print(f"  [DRY RUN / WARN] {skills_root} does not exist.")
                 print("  In a real run this would abort. Install Claude Code first:")
                 print("    https://docs.anthropic.com/en/docs/claude-code/overview\n")
+            else:
+                print(f"  ✓ [DRY RUN] Pre-flight passed — skills root found: {skills_root}")
             return
 
         if not skills_root.exists():
@@ -105,10 +107,10 @@ class ClaudeSkillInstaller(BaseInstaller):
             print()
             print(f"     Expected: {skills_root}")
             print()
-            print("  Claude Code must be installed before running this installer.")
+            print("  Claude Code must be installed before running this installers.")
             print()
             print("  Install Claude Code:")
-            print("    npm install -g @anthropic-ai/claude-code")
+            print("  https://code.claude.com/docs/en/quickstart ")
             print()
             print("  Then run `claude` once in any project to initialise ~/.claude/.")
             print()
@@ -141,6 +143,7 @@ class ClaudeSkillInstaller(BaseInstaller):
         self._preflight()
 
         standards = self.discover_standards()
+        print(f"  [WARN] discover standards results {standards}")
         if not standards:
             print(f"  [WARN] No standard folders found in {self.source}")
             return
@@ -312,7 +315,7 @@ Files to read when working with {label}:
         print()
         print("  To confirm the skill is loaded:")
         print()
-        print("    /skills")
+        print(f"    /{SKILL_NAME}")
         print()
         print("  To invoke it manually in a session:")
         print()

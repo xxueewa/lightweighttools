@@ -2,26 +2,6 @@
 codestandard — CLI entry point
 ==============================
 Install team code-style rules into AI agent config directories.
-
-Usage
------
-  codestandard <agent> --install
-  codestandard <agent> --dry-run
-  codestandard <agent> --uninstall
-  codestandard --list
-
-Agents
-------
-  claude        Global skill         →  ~/.claude/skills/codestandardskill/
-  codex         Codex / OpenAI       →  AGENTS.md + .codex/
-  cursor        Cursor /             →  .cursor/rules/*.mdc
-  Trae          Trae                 →  .trae/rules
-
-Examples
---------
-  codestandard claude --install
-  codestandard claude --dry-run
-  codestandard claude --uninstall
 """
 
 from __future__ import annotations
@@ -31,18 +11,18 @@ import shutil
 import sys
 from pathlib import Path
 
-from codestandard.installers.claude import ClaudeSkillInstaller
-from codestandard.installers.codex import CodexInstaller
-from codestandard.installers.cursor import CursorInstaller
+from codestandard.installers.claude import ClaudeSkillInstaller, SKILL_NAME
+from codestandard.installers.codex import CodexPluginInstaller
+from codestandard.installers.cursor import CursorRuleSetInstaller
 
 # ---------------------------------------------------------------------------
 # Agent registry
 # ---------------------------------------------------------------------------
 
 AGENTS: dict[str, type] = {
-    "claude": ClaudeSkillInstaller,
-    "codex":        CodexInstaller,
-    "cursor":       CursorInstaller,
+    "claude":       ClaudeSkillInstaller
+    # "codex": CodexPluginInstaller,
+    # "cursor": CursorRuleSetInstaller,
 }
 
 # Paths that each agent owns — used for --uninstall
@@ -70,7 +50,7 @@ def build_parser() -> argparse.ArgumentParser:
         nargs="?",
         choices=list(AGENTS.keys()),
         metavar="agent",
-        help=f"Target agent. Choices: {', '.join(AGENTS.keys())}",
+        help=f"Choices: {', '.join(AGENTS.keys())}, to be added: codex, cursor, trae",
     )
 
     # --- Mutually exclusive actions ---
@@ -78,17 +58,17 @@ def build_parser() -> argparse.ArgumentParser:
     action.add_argument(
         "--install",
         action="store_true",
-        help="Write config files to disk (default action when agent is given).",
+        help="Install the customized skills",
     )
     action.add_argument(
         "--dry-run",
         action="store_true",
-        help="Preview what would be written without touching the disk.",
+        help="Preview the installation steps",
     )
     action.add_argument(
         "--uninstall",
         action="store_true",
-        help="Remove config files/folders previously installed by this tool.",
+        help="Uninstall the skills",
     )
     action.add_argument(
         "--list",
@@ -97,26 +77,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     # --- Path options ---
+    # extend the ability for users to upload standard
     # parser.add_argument(
     #     "--source",
     #     default="./reference",
     #     metavar="PATH",
     #     help="Folder containing code-standard subdirectories. (default: ./reference)",
     # )
-    parser.add_argument(
-        "--target",
-        default=".",
-        metavar="PATH",
-        help=(
-            "Root directory to install into. "
-            "(default: current directory; claude-skill always uses ~/.claude)"
-        ),
-    )
-    parser.add_argument(
-        "--overwrite",
-        action="store_true",
-        help="Overwrite existing files. Without this flag existing files are skipped.",
-    )
 
     return parser
 
@@ -128,9 +95,7 @@ def build_parser() -> argparse.ArgumentParser:
 def do_list() -> None:
     print("\nSupported agents:\n")
     descriptions = {
-        "claude":       f"Global skill         →  ~/.claude/skills/{SKILL_NAME}/",
-        "codex":        "Codex / OpenAI       →  AGENTS.md + .codex/",
-        "cursor":       "Cursor / Trae        →  .cursor/rules/*.mdc",
+        "claude":       f"Global skill         →  ~/.claude/skills/"
     }
     for name, desc in descriptions.items():
         print(f"  {name:<16}  {desc}")
@@ -153,7 +118,7 @@ def do_install(
     )
 
     label = "[DRY RUN] " if dry_run else ""
-    print(f"\n{label}Installing rules for: {agent.upper()}")
+    print(f"\n{label}Installing skills for: {agent.upper()}")
     print(f"  Source : {source}")
     print(f"  Target : {target}\n")
 
@@ -215,9 +180,9 @@ def main() -> None:
         sys.exit(0)
 
     # fixed source path to only install from the module folder
-    source = Path(__file__).parent.parent / "reference"
-
-    target = Path(args.target).expanduser().resolve()
+    source = Path(__file__).parent.parent / "codestandard/reference"
+    # fixed target path to make sure install it to the right place
+    target = Path.home() / ".claude"
 
     if args.uninstall:
         do_uninstall(args.agent, target)
@@ -235,7 +200,7 @@ def main() -> None:
         source=source,
         target=target,
         dry_run=args.dry_run,
-        overwrite=args.overwrite,
+        overwrite=False,
     )
 
 

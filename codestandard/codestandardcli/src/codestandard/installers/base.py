@@ -1,5 +1,5 @@
 """
-Base installer — shared logic for all agents.
+Base installers — shared logic for all agents.
 """
 
 from __future__ import annotations
@@ -71,9 +71,10 @@ class BaseInstaller(ABC):
     # ------------------------------------------------------------------
 
     def discover_standards(self) -> List[Path]:
-        """Return sorted list of subdirectories inside self.source."""
+        """Return the sorted list of subdirectories inside self.source."""
+
         return sorted(
-            p for p in self.source.iterdir() if p.is_dir() and not p.name.startswith(".")
+            p for p in self.source.iterdir()
         )
 
     def read_standard(self, std_dir: Path) -> str:
