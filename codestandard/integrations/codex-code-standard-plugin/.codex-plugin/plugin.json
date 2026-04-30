@@ -1,0 +1,20 @@
+{
+  "name": "codex-code-standard-plugin",
+  "version": "0.1.0",
+  "description": "Adds code standard check workflows to Codex.",
+  "author": {
+    "name": "xueyanw",
+    "email": "",
+    "url": ""
+  },
+  "homepage": "[TODO: https://docs.example.com/plugin]",
+  "repository": "[TODO: https://github.com/author/plugin]",
+  "license": "[TODO: MIT]",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "CodeStandard",
+    "shortDescription": "Use My Tool from Codex workflows",
+    "category": "Productivity",
+    "capabilities": ["Write"]
+  }
+}

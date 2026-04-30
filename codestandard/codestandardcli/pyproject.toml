@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+# ---------------------------------------------------------------------------
+# Project metadata
+# ---------------------------------------------------------------------------
+[project]
+name            = "codestandard"
+version         = "0.1.0"
+description     = "Install team code-style rules into AI coding agent configs (Claude Code, Codex, Cursor)"
+readme          = "README.md"
+license         = { text = "MIT" }
+requires-python = ">=3.9"
+keywords        = ["claude", "codex", "cursor", "code-style", "linting", "ai", "developer-tools"]
+
+# No third-party runtime dependencies — stdlib only.
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/xxueewa/lightweighttools.git"
+
+# ---------------------------------------------------------------------------
+# CLI entry point
+# Installs the `codestandard` binary when the package is pip-installed.
+# ---------------------------------------------------------------------------
+[project.scripts]
+codestandard = "codestandard.cli:main"
+
+# ---------------------------------------------------------------------------
+# Package discovery
+# ---------------------------------------------------------------------------
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# ---------------------------------------------------------------------------
+# Optional: dev/test extras
+#   pip install -e ".[dev]"
+# ---------------------------------------------------------------------------
+[project.optional-dependencies]
+dev = [
+    "pytest>=7",
+    "build",
+    "twine",
+]
