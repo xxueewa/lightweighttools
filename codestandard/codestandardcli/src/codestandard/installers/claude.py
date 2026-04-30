@@ -143,43 +143,45 @@ class ClaudeSkillInstaller(BaseInstaller):
         self._preflight()
 
         standards = self.discover_standards()
-        print(f"  [WARN] discover standards results {standards}")
         if not standards:
             print(f"  [WARN] No standard folders found in {self.source}")
             return
 
-        print(f"  Found {len(standards)} standard(s):")
+        print(f"✓ [DONE] Found {len(standards)} standard(s):")
         for s in standards:
             print(f"    • {s.name}")
         print()
 
-        # 1. Write SKILL.md
-        file_map = self.build(standards)
-        for rel_path, content in file_map.items():
-            self._write(rel_path, content)
+        # TODO: 1. Update SKILL.md if customization enabled later
 
         # 2. Copy each standard directory into the skill folder
         skill_dir = self.target / "skills" / SKILL_NAME
-        self._copy_standards(standards, skill_dir)
+        skill_file_dest = skill_dir / 'SKILL.md'
+        reference_dest_dir = skill_dir / "reference"
 
-        total = len(file_map) + len(standards)
+        if self.dry_run:
+            print(f"  [DRY RUN] Would copy SKILL.md → {skill_file_dest}")
+        else:
+            print(f"  Copying SKILL.md → {skill_file_dest}")
+            shutil.copyfile(str(self.source / "installers/SKILL.md"), str(skill_file_dest))
+
+        self._copy_standards(standards, reference_dest_dir)
+
+        total = 1 + len(standards)
         print(f"\n  ✓ Done — {total} item(s) processed.")
 
-    def _copy_standards(self, standards: List[Path], skill_dir: Path) -> None:
+    def _copy_standards(self, standards: List[Path], reference_dir: Path) -> None:
         """Copy each reference/<standard>/ folder into the skill directory."""
         for std_dir in standards:
-            dest = skill_dir / std_dir.name
+            dest = reference_dir / std_dir.name
 
             if self.dry_run:
-                print(f"  [DRY RUN] Would copy dir → {dest}/")
-                continue
-
-            if dest.exists() and not self.overwrite:
-                print(f"  [SKIP]    {dest}/  (already exists — use --overwrite to replace)")
+                print(f"  [DRY RUN] Would copy {std_dir} → {dest}/")
                 continue
 
             if dest.exists():
-                shutil.rmtree(dest)
+                print(f"  [SKIP]    {dest}/  (already exists)")
+                continue
 
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copytree(str(std_dir), str(dest))

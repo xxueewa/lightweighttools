@@ -34,23 +34,8 @@ class BaseInstaller(ABC):
 
     def run(self) -> None:
         """Discover standards → build output map → write to disk."""
-        standards = self.discover_standards()
 
-        if not standards:
-            print(f"[WARN] No standard folders found in {self.source}")
-            return
-
-        print(f"  Found {len(standards)} standard(s):")
-        for s in standards:
-            print(f"    • {s.name}")
-        print()
-
-        file_map = self.build(standards)   # {relative_path: content}
-
-        for rel_path, content in file_map.items():
-            self._write(rel_path, content)
-
-        print(f"\n  ✓ Done — {len(file_map)} file(s) processed.")
+        print(f"\n  ✓ Task to be implemented")
 
     # ------------------------------------------------------------------
     # Subclass contract
@@ -72,9 +57,9 @@ class BaseInstaller(ABC):
 
     def discover_standards(self) -> List[Path]:
         """Return the sorted list of subdirectories inside self.source."""
-
+        reference_source = self.source / "reference"
         return sorted(
-            p for p in self.source.iterdir()
+            p for p in reference_source.iterdir()
         )
 
     def read_standard(self, std_dir: Path) -> str:

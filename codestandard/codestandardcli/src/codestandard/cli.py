@@ -180,7 +180,7 @@ def main() -> None:
         sys.exit(0)
 
     # fixed source path to only install from the module folder
-    source = Path(__file__).parent.parent / "codestandard/reference"
+    source = Path(__file__).parent.parent / "codestandard"
     # fixed target path to make sure install it to the right place
     target = Path.home() / ".claude"
 
@@ -189,11 +189,12 @@ def main() -> None:
         return
 
     # --install or --dry-run
-    if not source.exists() and not args.dry_run:
-        print(f"\n  [ERROR] Source directory not found: {source}")
-        print("  Create a 'reference/' folder with code-standard subfolders,")
-        print("  or pass --source <path> to point to an existing one.")
-        sys.exit(1)
+    # TODO: fix the directory
+    # if not source.exists() and not args.dry_run:
+    #     print(f"\n  [ERROR] Source directory not found: {source}")
+    #     print("  Create a 'reference/' folder with code-standard subfolders,")
+    #     print("  or pass --source <path> to point to an existing one.")
+    #     sys.exit(1)
 
     do_install(
         agent=args.agent,
