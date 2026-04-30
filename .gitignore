@@ -29,6 +29,6 @@ replay_pid*
 *.iws
 *.ipr
 
-.DS_Store
+/.DS_Store
 
 __pycache__
