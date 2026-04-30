@@ -40,32 +40,12 @@ from .base import BaseInstaller
 
 SKILL_NAME = "codestandardskill"
 
-# Maps a keyword found in the standard folder name → human language label
-# used in the SKILL.md trigger description.
-LANG_LABELS: dict[str, str] = {
-    "java":       "Java",
-    "python":     "Python",
-    "typescript": "TypeScript",
-    "ts":         "TypeScript",
-    "javascript": "JavaScript",
-    "js":         "JavaScript",
-    "go":         "Go",
-    "rust":       "Rust",
-    "kotlin":     "Kotlin",
-    "swift":      "Swift",
-    "ruby":       "Ruby",
-    "php":        "PHP",
-    "css":        "CSS/SCSS",
-    "html":       "HTML",
-    "sql":        "SQL",
-    "shell":      "Shell/Bash",
-}
 
 class ClaudeSkillInstaller(BaseInstaller):
     """
     Installs code standards as a Claude Code skill under ~/.claude/skills/.
 
-    this installers targets the GLOBAL skills directory, so the skill is
+    This installer targets the GLOBAL skills directory, so the skill is
     available across ALL projects on this machine.
     """
 
@@ -81,11 +61,6 @@ class ClaudeSkillInstaller(BaseInstaller):
     # ------------------------------------------------------------------
     # Pre-flight: verify ~/.claude/skills/ exists
     # ------------------------------------------------------------------
-
-    def run(self) -> None:
-        """Entry point — pre-flight check first, then delegate to super."""
-        self._preflight()
-        super().run()
 
     def _preflight(self) -> None:
         skills_root = self.target / "skills"
@@ -127,11 +102,7 @@ class ClaudeSkillInstaller(BaseInstaller):
         The actual standard directories are copied by _copy_standards(),
         which is called from run() after write.
         """
-        today = date.today().isoformat()
-        file_map: dict[str, str] = {
-            f"skills/{SKILL_NAME}/SKILL.md": self._build_skill_md(standards, today),
-        }
-        return file_map
+        return {}
 
     # ------------------------------------------------------------------
     # Override run() to also copy the reference folders
@@ -155,7 +126,7 @@ class ClaudeSkillInstaller(BaseInstaller):
 
         # 2. Copy files
         skill_dir = self.target / "skills" / SKILL_NAME
-        skill_file_dest = skill_dir / 'SKILL.md'
+        skill_file_dest = skill_dir / "SKILL.md"
         reference_dest_dir = skill_dir / "reference"
 
         if self.dry_run:
@@ -175,24 +146,24 @@ class ClaudeSkillInstaller(BaseInstaller):
     def _copy_standards(self, standards: List[Path], reference_dir: Path) -> None:
         """Copy each reference/<standard>/ folder into the skill directory."""
         Path(reference_dir).mkdir(parents=True, exist_ok=True)
-        for std_dir in standards:
-            dest = reference_dir / std_dir.name
+        for file_path in standards:
+            dest = reference_dir / file_path.name
 
             if self.dry_run:
-                print(f"  [DRY RUN] Would copy {std_dir} → {dest}/")
+                print(f"  [DRY RUN] Would copy {file_path} → {dest}/")
                 continue
 
             if dest.exists():
                 print(f"  [SKIP]    {dest}/  (already exists)")
                 continue
             Path(dest).touch()
-            shutil.copyfile(str(std_dir), str(dest))
+            shutil.copyfile(str(file_path), str(dest))
             print(f"  [OK]      Copied  → {dest}/")
 
     # ------------------------------------------------------------------
     # SKILL.md builder
     # ------------------------------------------------------------------
-    def _create_skill(self, skill_dir: Path):
+    def _create_skill(self, skill_dir: Path) -> None:
         """Create a new skill directory"""
         if skill_dir.exists():
             response = input(
@@ -205,116 +176,6 @@ class ClaudeSkillInstaller(BaseInstaller):
         else:
             Path(skill_dir).mkdir(parents=True, exist_ok=True)
             print(f"  creating new folder for {SKILL_NAME}. ")
-
-    def _build_skill_md(self, standards: List[Path], today: str) -> str:
-        std_names    = [s.name for s in standards]
-        lang_labels  = [self._lang_label(s.name) for s in standards]
-
-        # Trigger description — shown in Claude Code's skill panel
-        trigger_langs = ", ".join(lang_labels) if lang_labels else "any language"
-        trigger_desc  = (
-            f"Use this skill when the user asks about code style, coding standards, "
-            f"code review, or best practices for {trigger_langs}. "
-            f"Also use when writing new code or reviewing a PR that touches "
-            f"{trigger_langs} files."
-        )
-
-        # One reference block per standard
-        ref_blocks = "\n\n".join(
-            self._std_reference_block(s) for s in standards
-        )
-
-        # Instruction block: how Claude should apply the standards
-        apply_instructions = self._apply_instructions(standards)
-
-        return f"""\
----
-name: "{SKILL_NAME}"
-description: "{trigger_desc}"
-generated: "{today}"
----
-
-# Code Standard Skill
-
-## Purpose
-
-This skill gives Claude access to the team's official code style standards.
-When invoked, Claude reads the relevant standard file(s) and applies them
-to any code it writes, reviews, or refactors.
-
-## Available Standards
-
-{chr(10).join(f"- **{self._lang_label(n)}** → `{n}/`" for n in std_names)}
-
-## How to Read the Standards
-
-Each standard lives in a sub-folder next to this file.
-Load the standard that matches the language you are working in:
-
-{ref_blocks}
-
-## How to Apply the Standards
-
-{apply_instructions}
-
-## Reminders
-
-- Always check the relevant standard before writing or reviewing code.
-- Do NOT mix conventions from different standards in the same file.
-- If a standard is missing for the language in question, fall back to
-  widely-accepted community conventions and note the gap to the user.
-- Standards files are plain Markdown — read them with `cat` or `Read`.
-"""
-
-    # ------------------------------------------------------------------
-    # Helpers
-    # ------------------------------------------------------------------
-
-    def _lang_label(self, folder_name: str) -> str:
-        """Return a human-readable language name from a folder slug."""
-        lower = folder_name.lower()
-        for key, label in LANG_LABELS.items():
-            if key in lower:
-                return label
-        # Fall back to title-casing the folder name
-        return folder_name.replace("-", " ").replace("_", " ").title()
-
-    def _std_reference_block(self, std_dir: Path) -> str:
-        """Generate the load-instruction block for one standard."""
-        label    = self._lang_label(std_dir.name)
-        rel_path = f".claude/skills/{SKILL_NAME}/{std_dir.name}"
-
-        # List the files inside the standard directory
-        text_exts = {".md", ".txt", ".adoc", ".rst", ".markdown"}
-        files = sorted(
-            f for f in std_dir.rglob("*")
-            if f.is_file() and f.suffix.lower() in text_exts
-        )
-        file_lines = "\n".join(
-            f"  - `{rel_path}/{f.relative_to(std_dir)}`"
-            for f in files
-        ) or f"  - `{rel_path}/` _(no files found yet)_"
-
-        return f"""\
-### {label}
-
-Standard folder: `{rel_path}/`
-
-Files to read when working with {label}:
-{file_lines}"""
-
-    @staticmethod
-    def _apply_instructions(standards: List[Path]) -> str:
-        return """\
-1. **Identify the language** of the file(s) you are working on.
-2. **Read the matching standard file** listed in the section above using
-   the `Read` tool or `cat`.  Do this before writing a single line of code.
-3. **Apply every rule** from the standard unless the user explicitly
-   overrides one.  Mention any deviation and why.
-4. **On code review**, check each issue against the relevant standard and
-   cite the rule name / section in your feedback.
-5. **On refactoring**, surface any existing code that violates the standard
-   as a separate finding so the user can decide whether to fix it."""
 
     # ------------------------------------------------------------------
     # Reload hint

@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 # ---------------------------------------------------------------------------
 [project]
 name            = "codestandard"
-version         = "0.1.3"
+version         = "0.2.0"
 description     = "Install team code-style rules into AI coding agent configs (Claude Code, Codex, Cursor)"
 readme          = "README.md"
 license         = { text = "MIT" }

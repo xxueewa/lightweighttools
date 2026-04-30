@@ -10,7 +10,6 @@ import argparse
 import shutil
 import sys
 from pathlib import Path
-import importlib.resources
 
 from codestandard.installers.claude import ClaudeSkillInstaller, SKILL_NAME
 from codestandard.installers.codex import CodexPluginInstaller
@@ -136,7 +135,7 @@ def do_uninstall(agent: str, target: Path) -> None:
         return
 
     # claude: target is always ~/.claude regardless of --target
-    if agent == "claudel":
+    if agent == "claude":
         target = ClaudeSkillInstaller.DEFAULT_TARGET
 
     print(f"\nUninstalling: {agent.upper()}")
@@ -161,8 +160,6 @@ def do_uninstall(agent: str, target: Path) -> None:
     else:
         print(f"\n  Nothing to remove.")
 
-def default_source() -> Path:
-    return importlib.resources.path("codestandard")
 
 # ---------------------------------------------------------------------------
 # Main
