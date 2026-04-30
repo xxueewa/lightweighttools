@@ -156,6 +156,13 @@ class ClaudeSkillInstaller(BaseInstaller):
 
         # 2. Copy each standard directory into the skill folder
         skill_dir = self.target / "skills" / SKILL_NAME
+        if skill_dir.exists():
+            print(f"  [WARN]  {skill_dir} already installed. ")
+            sys.exit(1)
+
+        Path(skill_dir).mkdir(parents=True, exist_ok=True)
+        print(f"  creating new folder for {SKILL_NAME}. ")
+
         skill_file_dest = skill_dir / 'SKILL.md'
         reference_dest_dir = skill_dir / "reference"
 
@@ -163,6 +170,7 @@ class ClaudeSkillInstaller(BaseInstaller):
             print(f"  [DRY RUN] Would copy SKILL.md → {skill_file_dest}")
         else:
             print(f"  Copying SKILL.md → {skill_file_dest}")
+            Path(skill_file_dest).touch()
             shutil.copyfile(str(self.source / "installers/SKILL.md"), str(skill_file_dest))
 
         self._copy_standards(standards, reference_dest_dir)
@@ -172,6 +180,7 @@ class ClaudeSkillInstaller(BaseInstaller):
 
     def _copy_standards(self, standards: List[Path], reference_dir: Path) -> None:
         """Copy each reference/<standard>/ folder into the skill directory."""
+        Path(reference_dir).mkdir(parents=True, exist_ok=True)
         for std_dir in standards:
             dest = reference_dir / std_dir.name
 
@@ -182,9 +191,8 @@ class ClaudeSkillInstaller(BaseInstaller):
             if dest.exists():
                 print(f"  [SKIP]    {dest}/  (already exists)")
                 continue
-
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copytree(str(std_dir), str(dest))
+            Path(dest).touch()
+            shutil.copyfile(str(std_dir), str(dest))
             print(f"  [OK]      Copied  → {dest}/")
 
     # ------------------------------------------------------------------
