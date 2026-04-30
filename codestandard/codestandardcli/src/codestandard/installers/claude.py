@@ -72,7 +72,7 @@ class ClaudeSkillInstaller(BaseInstaller):
                 print("  In a real run this would abort. Install Claude Code first:")
                 print("    https://docs.anthropic.com/en/docs/claude-code/overview\n")
             else:
-                print(f"  ✓ [DRY RUN] Pre-flight passed — skills root found: {skills_root}")
+                print(f"  ✓ Pre-flight passed — skills root found: {skills_root}")
             return
 
         if not skills_root.exists():
@@ -117,7 +117,7 @@ class ClaudeSkillInstaller(BaseInstaller):
             print(f"  [WARN] No standard folders found in {self.source}")
             return
 
-        print(f"✓ [DONE] Found {len(standards)} standard(s):")
+        print(f"  ✓ Found {len(standards)} standard(s):")
         for s in standards:
             print(f"    • {s.name}")
         print()
@@ -131,8 +131,8 @@ class ClaudeSkillInstaller(BaseInstaller):
 
         if self.dry_run:
             if skill_dir.exists():
-                print(f" [WARN] {skill_dir} already exists.")
-            print(f"  [DRY RUN] Would copy SKILL.md → {skill_file_dest}")
+                print(f"  [WARN] {skill_dir} already exists.")
+            print(f"  Would copy SKILL.md → {skill_file_dest}")
         else:
             self._create_skill(skill_dir)
             print(f"  Copying SKILL.md → {skill_file_dest}")

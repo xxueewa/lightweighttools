@@ -4,3 +4,5 @@ src/codestandard/installers/__pycache__
 .DS_Store
 
 */.DS_Store
+
+dist/
