@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 # ---------------------------------------------------------------------------
 [project]
 name            = "codestandard"
-version         = "0.1.0"
+version         = "0.1.3"
 description     = "Install team code-style rules into AI coding agent configs (Claude Code, Codex, Cursor)"
 readme          = "README.md"
 license         = { text = "MIT" }
@@ -32,6 +32,17 @@ codestandard = "codestandard.cli:main"
 # ---------------------------------------------------------------------------
 [tool.setuptools.packages.find]
 where = ["src"]
+
+# ---------------------------------------------------------------------------
+# Include non python files
+# ---------------------------------------------------------------------------
+[tool.setuptools.package-data]
+codestandard = [
+    "*.md",
+    "**/*.md",
+    "reference/**/*.md",
+    "reference/**/*.txt",
+]
 
 # ---------------------------------------------------------------------------
 # Optional: dev/test extras

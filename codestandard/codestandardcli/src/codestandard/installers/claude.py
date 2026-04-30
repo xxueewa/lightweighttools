@@ -61,7 +61,6 @@ LANG_LABELS: dict[str, str] = {
     "shell":      "Shell/Bash",
 }
 
-
 class ClaudeSkillInstaller(BaseInstaller):
     """
     Installs code standards as a Claude Code skill under ~/.claude/skills/.
@@ -154,26 +153,21 @@ class ClaudeSkillInstaller(BaseInstaller):
 
         # TODO: 1. Update SKILL.md if customization enabled later
 
-        # 2. Copy each standard directory into the skill folder
+        # 2. Copy files
         skill_dir = self.target / "skills" / SKILL_NAME
-        if skill_dir.exists():
-            print(f"  [WARN]  {skill_dir} already installed. ")
-            sys.exit(1)
-
-        Path(skill_dir).mkdir(parents=True, exist_ok=True)
-        print(f"  creating new folder for {SKILL_NAME}. ")
-
         skill_file_dest = skill_dir / 'SKILL.md'
         reference_dest_dir = skill_dir / "reference"
 
         if self.dry_run:
+            if skill_dir.exists():
+                print(f" [WARN] {skill_dir} already exists.")
             print(f"  [DRY RUN] Would copy SKILL.md → {skill_file_dest}")
         else:
+            self._create_skill(skill_dir)
             print(f"  Copying SKILL.md → {skill_file_dest}")
             Path(skill_file_dest).touch()
             shutil.copyfile(str(self.source / "installers/SKILL.md"), str(skill_file_dest))
-
-        self._copy_standards(standards, reference_dest_dir)
+            self._copy_standards(standards, reference_dest_dir)
 
         total = 1 + len(standards)
         print(f"\n  ✓ Done — {total} item(s) processed.")
@@ -198,6 +192,19 @@ class ClaudeSkillInstaller(BaseInstaller):
     # ------------------------------------------------------------------
     # SKILL.md builder
     # ------------------------------------------------------------------
+    def _create_skill(self, skill_dir: Path):
+        """Create a new skill directory"""
+        if skill_dir.exists():
+            response = input(
+                f" [WARN] {skill_dir} already exists. Do you want to proceed overwrite? [y/N]: ").lower().strip()
+            if response in ("y", "yes"):
+                print("Proceeding with overwrite.")
+                shutil.rmtree(skill_dir)
+            else:
+                sys.exit(1)
+        else:
+            Path(skill_dir).mkdir(parents=True, exist_ok=True)
+            print(f"  creating new folder for {SKILL_NAME}. ")
 
     def _build_skill_md(self, standards: List[Path], today: str) -> str:
         std_names    = [s.name for s in standards]
